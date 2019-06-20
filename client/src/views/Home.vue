@@ -6,7 +6,7 @@
 
 <script>
 // @ is an alias to /src
-import Main from '@/components/Main.vue'
+import Main from '@/components/MainPage/Main'
 
 export default {
   name: 'home',
@@ -15,3 +15,11 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.home {
+  width: 100%;
+  height: 100%;
+}
+</style>
+

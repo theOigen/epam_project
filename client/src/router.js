@@ -5,6 +5,7 @@ import About from './views/About.vue'
 import Login from './components/auth/Login.vue'
 import Logout from './components/auth/Logout.vue'
 import Movie from './components/MoviePage/Movie.vue'
+import NotFound from './views/404.vue'
 
 Vue.use(Router)
 
@@ -37,6 +38,11 @@ export default new Router({
       name: 'movie',
       component: Movie,
       props: true
+    },
+    {
+      path: '*',
+      name: 'not found',
+      component: NotFound
     }
   ]
 })

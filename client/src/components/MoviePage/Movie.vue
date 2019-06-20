@@ -1,68 +1,71 @@
 <template>
-  <b-container fluid class="movie-container" v-if="!isLoading">
-    <b-row>
-      <b-col cols="6" md="3" xl="2">
-        <div class="poster-wrapper">
-          <img :src="movie.posterUrl" class="movie-poster">
-        </div>
-      </b-col>
-      <b-col cols="6" md="9" xl="10">
-        <div class="movie-info">
-          <div class="d-flex justify-content-start">
-            <h1>{{movie.title}}</h1>
-            <b-link href="#" class="ticket-link">
-              <i class="fa fa-ticket" aria-hidden="true"></i>
-            </b-link>
+  <div class="custom-container" v-if="!error">
+    <b-container fluid v-if="!isLoading">
+      <b-row>
+        <b-col cols="6" md="3" xl="2">
+          <div class="poster-wrapper">
+            <img :src="movie.posterUrl" class="movie-poster">
           </div>
-          <ul class="info-list">
-            <li>
-              Directed by:
-              <span class="text-muted">{{movie.directedBy}}</span>
-            </li>
-            <li>
-              Released:
-              <span class="text-muted">{{prettyDate(movie.releaseDate)}}</span>
-            </li>
-            <li>
-              Genre:
-              <span class="text-muted">{{movie.genre}}</span>
-            </li>
-            <li>
-              Timekeeping:
-              <span class="text-muted">{{movie.timekeeping}}</span>
-            </li>
-          </ul>
-        </div>
-        <div class="movie-synopsis">{{movie.synopsis}}</div>
-        <CommentsSection
-          :movieId="movie.id"
-          :movieTitle="movie.title"
-          :comments="paginatedComments"
-          :prettyDate="prettyDate"
-        ></CommentsSection>
-        <div class="mt-3">
-          <b-pagination
-            v-model="currentPage"
-            :total-rows="movieComments.length"
-            :per-page="perPage"
-            align="center"
-          ></b-pagination>
-        </div>
-      </b-col>
-    </b-row>
-  </b-container>
-  <b-container
-    fluid
-    class="spinner-container d-flex justify-content-center align-items-center"
-    v-else
-  >
-    <b-spinner label="Loading..." class="loading-spinner"></b-spinner>
-  </b-container>
+        </b-col>
+        <b-col cols="6" md="9" xl="10">
+          <div class="movie-info">
+            <div class="d-flex justify-content-start">
+              <h1>{{movie.title}}</h1>
+              <b-link href="#" class="ticket-link">
+                <i class="fa fa-ticket" aria-hidden="true"></i>
+              </b-link>
+            </div>
+            <ul class="info-list">
+              <li>
+                Directed by:
+                <span class="text-muted">{{movie.directedBy}}</span>
+              </li>
+              <li>
+                Released:
+                <span class="text-muted">{{prettyDate(movie.releaseDate)}}</span>
+              </li>
+              <li>
+                Genre:
+                <span class="text-muted">{{movie.genre}}</span>
+              </li>
+              <li>
+                Timekeeping:
+                <span class="text-muted">{{movie.timekeeping}}</span>
+              </li>
+            </ul>
+          </div>
+          <div class="movie-synopsis">{{movie.synopsis}}</div>
+          <CommentsSection
+            :movieId="movie.id"
+            :movieTitle="movie.title"
+            :comments="paginatedComments"
+            :prettyDate="prettyDate"
+          ></CommentsSection>
+          <div class="mt-3" v-if="movieComments.length > perPage">
+            <b-pagination
+              class="dark-pagination"
+              v-model="currentPage"
+              :total-rows="movieComments.length"
+              :per-page="perPage"
+              align="center"
+            ></b-pagination>
+          </div>
+        </b-col>
+      </b-row>
+    </b-container>
+    <b-container fluid class="w-100 h-100 d-flex justify-content-center align-items-center" v-else>
+      <b-spinner label="Loading..." class="loading-spinner"></b-spinner>
+    </b-container>
+  </div>
+  <div class="w-100 h-100" v-else>
+    <NotFound></NotFound>
+  </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import CommentsSection from './Comments'
+import NotFound from '@/views/404'
 export default {
   name: 'movie',
   props: {
@@ -71,7 +74,8 @@ export default {
     }
   },
   components: {
-    CommentsSection
+    CommentsSection,
+    NotFound
   },
   data() {
     return {
@@ -79,7 +83,8 @@ export default {
       userComment: '',
       isLoading: true,
       currentPage: 1,
-      perPage: 3
+      perPage: 3,
+      error: null
     }
   },
   mounted() {
@@ -103,18 +108,23 @@ export default {
       } else {
         const id = this.$route.params.id
         if (id.length) {
-          this.$store.dispatch('getMovieById', id).then(movie => {
-            this.movie = movie
-            this.getComments()
-          })
+          this.$store
+            .dispatch('getMovieById', id)
+            .then(movie => {
+              this.movie = movie
+              this.getComments()
+            })
+            .catch(error => {
+              this.error = error
+            })
         }
       }
     },
     getComments() {
       const id = this.movie.id
-      this.$store
-        .dispatch('getMovieComments', id)
-        .then((this.isLoading = false))
+      this.$store.dispatch('getMovieComments', id).then(() => {
+        this.isLoading = false
+      })
     },
     addComment() {
       this.$store.dispatch('addComment', {
@@ -140,20 +150,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.loading-spinner {
-  width: 100px;
-  height: 100px;
-  border-width: 7px;
-}
-.spinner-container {
-  width: 100%;
-  height: 100%;
-}
-.movie-container,
-.spinner-container {
-  padding: 50px 50px 40px 40px;
-  font-size: 1.3rem;
-}
 .ticket-link {
   color: #343a40;
   &:hover {
@@ -165,13 +161,6 @@ export default {
   max-width: 50px;
   max-height: 50px;
 }
-// .comment-title {
-//   font-size: 1.1rem;
-// }
-// .card-shadow {
-//   margin-top: 0.5rem;
-//   box-shadow: 0px 0px 1.5px black;
-// }
 .movie-poster {
   max-width: 100%;
   max-height: 400px;
@@ -185,7 +174,4 @@ export default {
     line-height: 35px;
   }
 }
-// .comments {
-//   font-size: 1rem;
-// }
 </style>

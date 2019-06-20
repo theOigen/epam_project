@@ -92,16 +92,22 @@ export default new Vuex.Store({
         })
     },
     requestMovies(context) {
-      db.collection('movies')
-        .get()
-        .then(querySnapshot => {
-          const mappedMovies = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            releaseDate: doc.data().releaseDate.toDate()
-          }))
-          context.commit('receiveMovies', mappedMovies)
-        })
+      return new Promise(resolve => {
+        db.collection('movies')
+          .get()
+          .then(querySnapshot => {
+            const mappedMovies = querySnapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data(),
+              releaseDate: doc.data().releaseDate.toDate()
+            }))
+            context.commit('receiveMovies', mappedMovies)
+            resolve()
+          })
+          .catch(error => {
+            console.log(error)
+          })
+      })
     }
   }
 })
