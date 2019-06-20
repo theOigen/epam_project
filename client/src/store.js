@@ -1,20 +1,24 @@
 /* eslint-disable space-before-function-paren */
 import Vue from 'vue'
 import Vuex from 'vuex'
-import db from './firebaseInit'
-import utils from './utils'
+import db from './database/firebaseInit'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    userData: JSON.parse(localStorage.getItem('authData')),
-    movies: []
+    userData: JSON.parse(localStorage.getItem('authData')) || {
+      authenticated: false,
+      currentUser: null
+    },
+    movies: [],
+    movieComments: []
   },
   getters: {
     isLoggedIn: state => state.userData.authenticated,
     userLogin: state => state.userData.currentUser.login,
-    movies: state => state.movies
+    movies: state => state.movies,
+    movieComments: state => state.movieComments
   },
   mutations: {
     receiveUser(state, userData) {
@@ -25,6 +29,9 @@ export default new Vuex.Store({
     },
     receiveMovies(state, movies) {
       state.movies = movies
+    },
+    receiveComments(state, comments) {
+      state.movieComments = comments
     }
   },
   actions: {
@@ -37,40 +44,63 @@ export default new Vuex.Store({
       context.commit('logout', userData)
     },
     getMovieById(context, id) {
-      return new Promise(async (resolve, reject) => {
+      return new Promise((resolve, reject) => {
         const docRef = db.collection('movies').doc(id)
-        try {
-          const doc = await docRef.get()
-          if (doc.exists) {
-            resolve({
+        docRef
+          .get()
+          .then(doc => {
+            if (doc.exists) {
+              resolve({
+                id: doc.id,
+                ...doc.data(),
+                releaseDate: doc.data().releaseDate.toDate()
+              })
+            } else {
+              reject(new Error('Movie not founded..'))
+            }
+          })
+          .catch(error => {
+            reject(error)
+          })
+      })
+    },
+    addComment(context, { movieId, userComment }) {
+      db.collection('movies')
+        .doc(movieId)
+        .collection('comments')
+        .add({
+          message: userComment,
+          postedAt: new Date(),
+          author: context.getters.userLogin
+        })
+    },
+    getMovieComments(context, movieId) {
+      db.collection('movies')
+        .doc(movieId)
+        .collection('comments')
+        .orderBy('postedAt', 'desc')
+        .onSnapshot(querySnapshot => {
+          const comments = []
+          querySnapshot.forEach(doc => {
+            comments.push({
               id: doc.id,
               ...doc.data(),
-              releaseDate: utils.getDateFromSeconds(
-                doc.data().releaseDate.seconds
-              )
+              postedAt: doc.data().postedAt.toDate()
             })
-          } else {
-            throw Error('No movie...')
-          }
-        } catch (error) {
-          reject(error)
-        }
-      })
+          })
+          context.commit('receiveComments', comments)
+        })
     },
     requestMovies(context) {
       db.collection('movies')
         .get()
         .then(querySnapshot => {
-          context.commit(
-            'receiveMovies',
-            querySnapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data(),
-              releaseDate: utils.getDateFromSeconds(
-                doc.data().releaseDate.seconds
-              )
-            }))
-          )
+          const mappedMovies = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            releaseDate: doc.data().releaseDate.toDate()
+          }))
+          context.commit('receiveMovies', mappedMovies)
         })
     }
   }

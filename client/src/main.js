@@ -4,7 +4,6 @@ import BootstrapVue from 'bootstrap-vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-// import db from './firebaseInit'
 import * as GoogleMaps from 'vue2-google-maps'
 
 import 'bootstrap/dist/css/bootstrap.css'
@@ -20,14 +19,8 @@ Vue.use(GoogleMaps, {
   }
 })
 
-// Vue.prototype.$db = db
-
 new Vue({
   router,
   store,
   render: h => h(App)
 }).$mount('#app')
-
-// created() {
-// firebase.initializeApp(config)
-// },

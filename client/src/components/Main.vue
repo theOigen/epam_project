@@ -12,7 +12,7 @@
       @sliding-end="onSlideEnd"
     >
       <b-carousel-slide v-for="movie in movies" :key="movie.id" :caption="movie.title">
-        <img slot="img" class="d-block fluid w-100" height="650" :src="movie.shotUrl">
+        <img slot="img" class="d-block fluid w-100 covered" height="650" :src="movie.shotUrl">
       </b-carousel-slide>
     </b-carousel>
 
@@ -23,7 +23,7 @@
             <b-input placeholder="Film title" id="searchBar"></b-input>
           </b-col>
           <b-col lg="1" md="2" sm="3" cols="3">
-            <b-button variant="outline-info" class="search-button float-right">Search</b-button>
+            <b-button variant="outline-dark" class="search-button float-right">Search</b-button>
           </b-col>
         </b-row>
       </b-form>
@@ -38,7 +38,7 @@
       <div>
         <b-card-group deck class="mt-2">
           <b-row>
-            <b-col v-for="movie in movies" :key="movie.id">
+            <b-col v-for="movie in filteredMovies" :key="movie.id">
               <b-card
                 :img-src="movie.posterUrl"
                 img-alt="Image"
@@ -50,13 +50,12 @@
                 <b-card-body>
                   <b-card-title>
                     <router-link
+                      class="title-link"
                       :to="{name: 'movie', params: {propMovie: movie, id:movie.id}, query: movie.id}"
                     >{{movie.title}}</router-link>
                   </b-card-title>
                   <b-card-text>{{movie.synopsis}}</b-card-text>
                 </b-card-body>
-
-                <!-- <b-button href="#" variant="primary">Go somewhere</b-button> -->
               </b-card>
             </b-col>
           </b-row>
@@ -68,6 +67,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 export default {
   data() {
     return {
@@ -96,19 +96,19 @@ export default {
     }
   },
   computed: {
-    movies() {
+    filteredMovies() {
       /** @TODO
        * filter and sort movies by dates and genres
        * paginate movies
        */
-      if (this.genre === this.genres[0] && this.sort === this.dates[0]) {
-        return this.$store.getters.movies
-      } else {
-        this.$store.getters.movies.filter(movie =>
+      if (this.genre !== this.genres[0])
+        return this.$store.getters.movies.filter(movie =>
           movie.genre.includes(this.genre)
         )
-      }
+      else return this.movies
+      // }
     },
+    ...mapGetters(['movies']),
     rows() {
       return 30
     }
@@ -117,6 +117,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.covered {
+  object-fit: cover;
+}
+.title-link {
+  color: inherit;
+  &:hover {
+    text-decoration: none;
+    color: #537094;
+  }
+}
 .card-img-left {
   max-width: 300px;
   max-height: 300px;

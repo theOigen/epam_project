@@ -4,7 +4,7 @@ import Home from './views/Home.vue'
 import About from './views/About.vue'
 import Login from './components/auth/Login.vue'
 import Logout from './components/auth/Logout.vue'
-import Movie from './components/Movie.vue'
+import Movie from './components/MoviePage/Movie.vue'
 
 Vue.use(Router)
 
