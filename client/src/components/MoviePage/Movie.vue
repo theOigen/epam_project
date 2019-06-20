@@ -11,7 +11,7 @@
           <div class="movie-info">
             <div class="d-flex justify-content-start">
               <h1>{{movie.title}}</h1>
-              <b-link href="#" class="ticket-link">
+              <b-link class="ticket-link">
                 <i class="fa fa-ticket" aria-hidden="true"></i>
               </b-link>
             </div>
@@ -151,6 +151,7 @@ export default {
 
 <style lang="scss" scoped>
 .ticket-link {
+  max-height: 30px;
   color: #343a40;
   &:hover {
     color: #656668;

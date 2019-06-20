@@ -31,7 +31,7 @@ export default {
   }
 }
 .card-img-left {
-  max-width: 300px;
+  max-width: 200px;
   max-height: 300px;
 }
 </style>
