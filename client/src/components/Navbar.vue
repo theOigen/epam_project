@@ -1,32 +1,33 @@
 <template>
-  <div class="mb-5">
-    <b-navbar toggleable="lg" type="dark" variant="info" height="200" fixed="top">
-      <b-navbar-brand>16:9</b-navbar-brand>
+  <b-navbar toggleable="lg" type="dark" variant="dark" fixed="top">
+    <b-navbar-brand>16:9</b-navbar-brand>
 
-      <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+    <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
-      <b-collapse id="nav-collapse" is-nav>
-        <b-navbar-nav class="ml-auto">
-          <b-nav-item to="/">Home</b-nav-item>
-          <b-nav-item to="/about">About</b-nav-item>
-          <b-nav-item-dropdown right text="User">
-            <b-dropdown-item>Profile</b-dropdown-item>
-            <b-dropdown-item>Logout</b-dropdown-item>
-          </b-nav-item-dropdown>
-        </b-navbar-nav>
-      </b-collapse>
-    </b-navbar>
-  </div>
+    <b-collapse id="nav-collapse" is-nav>
+      <b-navbar-nav class="ml-auto">
+        <b-nav-item to="/">Home</b-nav-item>
+        <b-nav-item to="/about">About</b-nav-item>
+        <b-nav-item to="/login" v-if="!$store.getters.isLoggedIn">Login</b-nav-item>
+        <b-nav-item-dropdown v-else right :text="$store.getters.userLogin">
+          <b-dropdown-item class="logout-item" to="/logout">Logout</b-dropdown-item>
+        </b-nav-item-dropdown>
+      </b-navbar-nav>
+    </b-collapse>
+  </b-navbar>
 </template>
 
-<style scoped lang="scss">
-a.nav-link {
-  text-decoration: none;
+<style lang="scss">
+.logout-item .dropdown-item:active {
   color: white;
+  background-color: #4e4e4e;
+}
+.navbar-dark .navbar-nav a.nav-link {
   &.router-link-exact-active {
     color: white;
   }
-  :focus {
+  &:focus,
+  &:hover {
     color: white;
   }
 }

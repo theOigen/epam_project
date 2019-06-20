@@ -7,60 +7,63 @@
       controls
       indicators
       background="#ababab"
-      img-width="1024"
-      img-height="480"
       style="text-shadow: 1px 1px 2px #333;"
       @sliding-start="onSlideStart"
       @sliding-end="onSlideEnd"
     >
-      <!-- Text slides with image -->
-
-      <b-carousel-slide v-for="film in films" :key="film.id" :caption="film.name">
-        <img slot="img" class="d-block img-fluid w-100" width="1024" height="300" :src="film.img">
-      </b-carousel-slide>
-
-      <b-carousel-slide
-        caption="First slide"
-        text="Nulla vitae elit libero, a pharetra augue mollis interdum."
-        img-src="https://picsum.photos/1024/480/?image=52"
-      ></b-carousel-slide>
-
-      <!-- Slides with custom text -->
-      <b-carousel-slide img-src="https://picsum.photos/1024/480/?image=54">
-        <h1>Hello world!</h1>
-      </b-carousel-slide>
-
-      <!-- Slides with image only -->
-      <b-carousel-slide img-src="https://picsum.photos/1024/480/?image=58"></b-carousel-slide>
-
-      <!-- Slides with img slot -->
-      <!-- Note the classes .d-block and .img-fluid to prevent browser default image alignment -->
-      <b-carousel-slide>
-        <img
-          slot="img"
-          class="d-block img-fluid w-100"
-          width="1024"
-          height="480"
-          src="https://picsum.photos/1024/480/?image=55"
-          alt="image slot"
-        >
-      </b-carousel-slide>
-
-      <!-- Slide with blank fluid image to maintain slide aspect ratio -->
-      <b-carousel-slide caption="Blank Image" img-blank img-alt="Blank image">
-        <router-link to="/about">Watch this!)</router-link>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eros felis, tincidunt
-          a tincidunt eget, convallis vel est. Ut pellentesque ut lacus vel interdum.
-        </p>
+      <b-carousel-slide v-for="movie in movies" :key="movie.id" :caption="movie.title">
+        <img slot="img" class="d-block fluid w-100" height="650" :src="movie.shotUrl">
       </b-carousel-slide>
     </b-carousel>
 
-    <p class="mt-4">
-      Slide #: {{ slide }}
-      <br>
-      Sliding: {{ sliding }}
-    </p>
+    <b-container class="mt-4">
+      <b-form>
+        <b-row>
+          <b-col lg="11" md="10" sm="9" cols="9">
+            <b-input placeholder="Film title" id="searchBar"></b-input>
+          </b-col>
+          <b-col lg="1" md="2" sm="3" cols="3">
+            <b-button variant="outline-info" class="search-button float-right">Search</b-button>
+          </b-col>
+        </b-row>
+      </b-form>
+      <b-row class="mt-2">
+        <b-col>
+          <b-form-select :options="dates" v-model="sort" class="sort-selector"></b-form-select>
+        </b-col>
+        <b-col>
+          <b-form-select :options="genres" v-model="genre" class="sort-selector float-right"></b-form-select>
+        </b-col>
+      </b-row>
+      <div>
+        <b-card-group deck class="mt-2">
+          <b-row>
+            <b-col v-for="movie in movies" :key="movie.id">
+              <b-card
+                :img-src="movie.posterUrl"
+                img-alt="Image"
+                img-left
+                no-body
+                tag="article"
+                class="mb-3"
+              >
+                <b-card-body>
+                  <b-card-title>
+                    <router-link
+                      :to="{name: 'movie', params: {propMovie: movie, id:movie.id}, query: movie.id}"
+                    >{{movie.title}}</router-link>
+                  </b-card-title>
+                  <b-card-text>{{movie.synopsis}}</b-card-text>
+                </b-card-body>
+
+                <!-- <b-button href="#" variant="primary">Go somewhere</b-button> -->
+              </b-card>
+            </b-col>
+          </b-row>
+        </b-card-group>
+        <b-pagination v-model="currentPage" :total-rows="rows" :per-page="perPage" align="center"></b-pagination>
+      </div>
+    </b-container>
   </div>
 </template>
 
@@ -70,22 +73,15 @@ export default {
     return {
       slide: 0,
       sliding: null,
-      films: [
-        {
-          id: 0,
-          name: 'Bladerunner',
-          img:
-            'http://cinefex.com/blog/wp-content/uploads/2015/03/Blade-Runner-Spinner-1.jpg'
-        },
-        {
-          id: 1,
-          name: 'La-La-Land',
-          img:
-            'https://www.dailydot.com/wp-content/uploads/daf/ff/4d7dc314ab1b01881879b26700fc292d.jpg'
-        }
-      ]
+      dates: ['Without sort', 'From newer to older', 'From older to newer'],
+      sort: 'Without sort',
+      genres: ['All', 'Sci-Fi', 'Drama', 'Comedy'],
+      genre: 'All',
+      perPage: 3,
+      currentPage: 1
     }
   },
+  mounted() {},
   methods: {
     onSlideStart(slide) {
       this.sliding = true
@@ -93,6 +89,46 @@ export default {
     onSlideEnd(slide) {
       this.sliding = false
     }
+  },
+  watch: {
+    currentPage() {
+      console.log('currentPage changes...', this.currentPage)
+    }
+  },
+  computed: {
+    movies() {
+      /** @TODO
+       * filter and sort movies by dates and genres
+       * paginate movies
+       */
+      if (this.genre === this.genres[0] && this.sort === this.dates[0]) {
+        return this.$store.getters.movies
+      } else {
+        this.$store.getters.movies.filter(movie =>
+          movie.genre.includes(this.genre)
+        )
+      }
+    },
+    rows() {
+      return 30
+    }
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.card-img-left {
+  max-width: 300px;
+  max-height: 300px;
+}
+#searchBar {
+  // max-width: 92%;
+  display: inline;
+}
+.search-button {
+  display: inline;
+}
+.sort-selector {
+  max-width: 50%;
+}
+</style>
