@@ -6,7 +6,7 @@
           placeholder="Leave a comment"
           rows="3"
           max-rows="6"
-          v-model="userComment"
+          v-model.trim="userComment"
           @keydown.enter.shift.exact="addComment"
         ></b-form-textarea>
         <b-button class="mt-1 float-right" variant="outline-dark" @click.prevent="addComment">Send</b-button>
@@ -29,11 +29,13 @@ export default {
   },
   methods: {
     addComment() {
-      this.$store.dispatch('addComment', {
-        movieId: this.movieId,
-        userComment: this.userComment
-      })
-      this.userComment = ''
+      if (this.userComment.length) {
+        this.$store.dispatch('addComment', {
+          movieId: this.movieId,
+          userComment: this.userComment
+        })
+        this.userComment = ''
+      }
     }
   }
 }

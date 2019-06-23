@@ -2,7 +2,7 @@
   <div>
     <b>Comments about {{movieTitle}}</b>
     <div>
-      <CommentForm :movieId="movieId"></CommentForm>
+      <CommentForm v-if="$store.getters.isLoggedIn" :movieId="movieId"></CommentForm>
     </div>
     <div class="comments">
       <Comment
